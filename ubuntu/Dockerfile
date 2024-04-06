@@ -8,32 +8,52 @@ WORKDIR /app
 ARG base_image_version=jammy
 ARG lua_version=5.4
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get -q --no-allow-insecure-repositories update \
-  && if [ $base_image_version = "focal" ]; then \
-         apt-get install --assume-yes --no-install-recommends \
-                 software-properties-common \
-         && add-apt-repository ppa:hvr/ghc \
-         && apt-get install --assume-yes --no-install-recommends \
-                    ghc-8.8.4=\* \
-                    cabal-install-3.0=\* \
-         && ln -s /opt/ghc/bin/ghc /usr/bin/ghc \
-         && ln -s /opt/cabal/bin/cabal /usr/bin/cabal; \
-     else \
-         apt-get install --assume-yes --no-install-recommends \
-                 ghc=* \
-                 cabal-install=*; \
-     fi \
-  && apt-get install --assume-yes --no-install-recommends \
-       build-essential=* \
-       ca-certificates=* \
-       curl=* \
-       fakeroot=* \
-       git \
-       libgmp-dev=2:6.* \
-       liblua$lua_version-dev=* \
-       pkg-config=* \
-       zlib1g-dev=1:1.2.11.* \
-  && rm -rf /var/lib/apt/lists/*
+
+RUN apt update
+#libffi6
+RUN apt install build-essential curl libffi-dev libgmp-dev libgmp10 libncurses-dev libncurses5 libtinfo5 git zlib1g-dev -y
+ENV BOOTSTRAP_HASKELL_NONINTERACTIVE 1
+RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+ENV PATH="/root/.ghcup/bin:${PATH}"
+
+# RUN git clone https://github.com/jgm/pandoc
+
+# RUN apt-get -q --no-allow-insecure-repositories update \
+#   && if [ $base_image_version = "focal" ]; then \
+#          apt-get install --assume-yes --no-install-recommends \
+#                  software-properties-common \
+#          && add-apt-repository ppa:hvr/ghc \
+#          && apt-get install --assume-yes --no-install-recommends \
+#                     ghc-8.8.4=\* \
+#                     cabal-install-3.0=\* \
+#          && ln -s /opt/ghc/bin/ghc /usr/bin/ghc \
+#          && ln -s /opt/cabal/bin/cabal /usr/bin/cabal; \
+#      else \
+#          apt-get install --assume-yes --no-install-recommends \
+#                  ghc=* \
+#                  cabal-install=*; \
+#      fi \
+#   && apt-get install --assume-yes --no-install-recommends \
+#        build-essential=* \
+#        ca-certificates=* \
+#        curl=* \
+#        fakeroot=* \
+#        git \
+#        libgmp-dev=2:6.* \
+#        liblua$lua_version-dev=* \
+#        pkg-config=* \
+#        zlib1g-dev=1:1.2.11.* \
+#   && rm -rf /var/lib/apt/lists/*
+
+RUN apt install \
+        ca-certificates=* \
+        curl=* \
+        fakeroot=* \
+        git \
+        libgmp-dev=2:6.* \
+        liblua$lua_version-dev=* \
+        pkg-config=* \
+        -y
 
 COPY cabal.root.config /root/.cabal/config
 RUN cabal --version \
