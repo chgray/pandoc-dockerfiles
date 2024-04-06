@@ -1,0 +1,9 @@
+# From ubuntu
+
+make STACK=ubuntu extra
+
+# 1. get a PAT from docker.com
+# 2. login
+
+# podman login docker.io -u <user>
+# docker push localhost/pandoc/extra:edge-ubuntu <user>/pandoc-arm:extra
